@@ -13,6 +13,7 @@ REQUIREMENTS
 INSTALLATION
 -------------
 To use this module you have to download it using composer and then install it.
+**(this will not work as the project is not on drupal.org yet!)**
 
    ```sh
     composer require "drupal/dotmailer"
@@ -38,7 +39,7 @@ like you would normally create a field.
 
 Still to do in order of priority.
 -------------
-1. Finish the integration to webform (not usable).
+1. Finish the integration to webform (not usable yet).
 2. Leverage caching more.
 3. Finish contact data fields.
 4. Automated tests.

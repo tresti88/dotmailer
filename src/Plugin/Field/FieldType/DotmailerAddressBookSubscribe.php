@@ -11,6 +11,7 @@ use Drupal\Core\TypedData\DataDefinitionInterface;
 use Drupal\Core\TypedData\TypedDataInterface;
 
 use Drupal\dotmailer\ValueObject\ContactDataFieldArray;
+use Drupal\dotmailer\ValueObject\EmailAddress;
 
 /**
  * Provides a field type of dotmailer_addressbook_subscribe.
@@ -28,11 +29,19 @@ class DotmailerAddressBookSubscribe extends FieldItemBase implements FieldItemIn
   protected $apiUsers;
 
   /**
+   * The previous state of subscribed.
+   *
+   * @var null
+   */
+  protected $previousSubscribedState;
+
+  /**
    * {@inheritdoc}
    */
   public function __construct(DataDefinitionInterface $definition, $name = NULL, TypedDataInterface $parent = NULL) {
     parent::__construct($definition, $name, $parent);
     $entityTypeManager = \Drupal::entityTypeManager();
+    $this->previousSubscribedState = NULL;
     $this->apiUsers = $entityTypeManager->getStorage('dotmailer_api_user')->loadMultiple();
   }
 
@@ -85,20 +94,51 @@ class DotmailerAddressBookSubscribe extends FieldItemBase implements FieldItemIn
   /**
    * {@inheritdoc}
    */
+  public function preSave() {
+    $entity = $this->getEntity();
+    $fieldName = $this->getFieldDefinition()->get('field_name');
+    $previousFieldValue = isset($entity->original) ? $entity->original->get($fieldName)->getValue() : NULL;
+    if (isset($previousFieldValue[0]['subscribed'])) {
+      $this->previousSubscribedState = ($previousFieldValue[0]['subscribed'] == '1');
+    }
+
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function postSave($update) {
     parent::postSave($update);
-    $entity = $this->getEntity();
-    $email = $entity->get($this->getEntityField())->value;
-    $addressBookId = $this->getAddressBookId();
 
+    if ($this->previousSubscribedState !== $this->getSubscribed()) {
+      $entity = $this->getEntity();
+      $email = $entity->get($this->getEntityField())->value;
+      $addressBookId = $this->getAddressBookId();
+
+      /** @var \Drupal\dotmailer\Entity\DotmailerApiUserInterface $apiUser */
+      $apiUser = $this->apiUsers[$this->getApiUser()];
+      $contactDataFields = $this->getContactDataFields();
+      $optIn = $this->getDoubleOptInSetting();
+      $subscribed = $this->getSubscribed();
+      $dataFields = new ContactDataFieldArray($contactDataFields, $entity);
+      $apiUser->setContactDataFields($dataFields);
+      $apiUser->subscribeContact($addressBookId, $email, $optIn, $subscribed);
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function delete() {
     /** @var \Drupal\dotmailer\Entity\DotmailerApiUserInterface $apiUser */
     $apiUser = $this->apiUsers[$this->getApiUser()];
-    $contactDataFields = $this->getContactDataFields();
-    $optIn = $this->getDoubleOptInSetting();
-    $subscribed = $this->getSubscribed();
-    $dataFields = new ContactDataFieldArray($contactDataFields, $entity);
-    $apiUser->setContactDataFields($dataFields);
-    $apiUser->subscribeContact($addressBookId, $email, $optIn, $subscribed);
+    $unSubscribeOnDelete = $this->definition->getSetting('unsubscribe_on_delete');
+    if ($unSubscribeOnDelete == TRUE) {
+      $entity = $this->getEntity();
+      $email = $entity->get($this->getEntityField())->value;
+      $emailAddress = new EmailAddress($email);
+      $apiUser->deleteContact($emailAddress);
+    }
   }
 
   /**
@@ -275,7 +315,7 @@ class DotmailerAddressBookSubscribe extends FieldItemBase implements FieldItemIn
     /** @var \Drupal\dotmailer\Entity\DotmailerApiUser $apiUser */
     $apiUser = $this->apiUsers[$this->getApiUser()];
 
-    $contactDataFields = $apiUser->getContactFields();
+    $contactDataFields = $apiUser->getDotmailerContactFields();
 
     $addressBook = $this->getSetting('dotmailer_address_book');
 

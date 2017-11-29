@@ -11,7 +11,7 @@ use Drupal\dotmailer\ValueObject\EmailAddress;
 use Drupal\dotmailer\ValueObject\OptInType;
 
 /**
- * Defines the Dotmailer api user entity.
+ * Defines the DotMailer api user entity.
  *
  * @ConfigEntityType(
  *   id = "dotmailer_api_user",
@@ -49,7 +49,7 @@ use Drupal\dotmailer\ValueObject\OptInType;
 class DotmailerApiUser extends ConfigEntityBase implements DotmailerApiUserInterface {
 
   /**
-   * The Dotmailer api user ID.
+   * The DotMailer api user ID.
    *
    * @var string
    */
@@ -63,14 +63,14 @@ class DotmailerApiUser extends ConfigEntityBase implements DotmailerApiUserInter
   protected $resources;
 
   /**
-   * The Dotmailer api user label.
+   * The DotMailer api user label.
    *
    * @var string
    */
   protected $label;
 
   /**
-   * Dotmailer api user email address.
+   * DotMailer api user email address.
    *
    * @var string
    */
@@ -98,10 +98,19 @@ class DotmailerApiUser extends ConfigEntityBase implements DotmailerApiUserInter
   protected $dataFields;
 
   /**
+   * The data cache store.
+   *
+   * @var \Drupal\Core\Cache\CacheBackendInterface
+   */
+  protected $cache;
+
+  /**
    * {@inheritdoc}
    */
   public function __construct(array $values, $entity_type) {
     parent::__construct($values, $entity_type);
+
+    $this->cache = \Drupal::service('cache.data');
 
     if (!empty($this->getEmail()) && !empty($this->getPassword())) {
       $credentials = [
@@ -190,7 +199,7 @@ class DotmailerApiUser extends ConfigEntityBase implements DotmailerApiUserInter
 
     $optInType = new OptInType($optInType);
 
-    if ($subscribed) {
+    if ($subscribed == TRUE) {
       $this->createContact($emailAddress, $optInType);
       $this->addUserToAddressBook($emailAddress, $addressBookId);
     }
@@ -206,6 +215,13 @@ class DotmailerApiUser extends ConfigEntityBase implements DotmailerApiUserInter
    */
   public function setContactDataFields(ContactDataFieldArray $contactDataFields) {
     $this->dataFields = $contactDataFields;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getContactDataFields() {
+    return $this->dataFields;
   }
 
   /**
@@ -236,7 +252,7 @@ class DotmailerApiUser extends ConfigEntityBase implements DotmailerApiUserInter
    * @param \Drupal\dotmailer\ValueObject\EmailAddress $email
    *   A valid email address object.
    * @param string $addressBook
-   *   The dotmailer address book id.
+   *   The dotMailer address book id.
    *
    * @return bool
    *   TRUE if the contact is found, FALSE otherwise.
@@ -257,12 +273,12 @@ class DotmailerApiUser extends ConfigEntityBase implements DotmailerApiUserInter
    * @param \Drupal\dotmailer\ValueObject\EmailAddress $email
    *   A valid email address object.
    * @param string $addressBook
-   *   The dotmailer address book id.
+   *   The dotMailer address book id.
    *
    * @return bool
    *   TRUE if we have added a user successfully, FALSE otherwise.
    */
-  public function addUserToAddressBook(EmailAddress $email, $addressBook) {
+  private function addUserToAddressBook(EmailAddress $email, $addressBook) {
     $apiContact = $this->doesEmailExistWithContact($email);
     if ($this->doesContactExistInAddressBook($email, $addressBook) == FALSE && ($apiContact instanceof ApiContact)) {
       $this->resources->PostAddressBookContacts($addressBook, $apiContact);
@@ -277,12 +293,12 @@ class DotmailerApiUser extends ConfigEntityBase implements DotmailerApiUserInter
    * @param \Drupal\dotmailer\ValueObject\EmailAddress $email
    *   A valid email address object.
    * @param string $addressBook
-   *   The dotmailer address book id.
+   *   The dotMailer address book id.
    *
    * @return bool
    *   TRUE if we have removed a user successfully, FALSE otherwise.
    */
-  public function removeUserFromAddressBook(EmailAddress $email, $addressBook) {
+  private function removeUserFromAddressBook(EmailAddress $email, $addressBook) {
     $apiContact = $this->doesEmailExistWithContact($email);
     if ($this->doesContactExistInAddressBook($email, $addressBook) == TRUE && ($apiContact instanceof ApiContact)) {
       $this->resources->DeleteAddressBookContact($addressBook, $apiContact->Id);
@@ -292,13 +308,7 @@ class DotmailerApiUser extends ConfigEntityBase implements DotmailerApiUserInter
   }
 
   /**
-   * Completely deletes a contact.
-   *
-   * @param \Drupal\dotmailer\ValueObject\EmailAddress $email
-   *   A valid email address object.
-   *
-   * @return bool
-   *   TRUE if we have delete a contact successfully, FALSE otherwise.
+   * {@inheritdoc}
    */
   public function deleteContact(EmailAddress $email) {
     $apiContact = $this->doesEmailExistWithContact($email);
@@ -318,22 +328,23 @@ class DotmailerApiUser extends ConfigEntityBase implements DotmailerApiUserInter
    * @return \DotMailer\Api\DataTypes\ApiContact
    *   The updated ApiContact Data type
    */
-  public function updateContact(ApiContact $apiContact) {
-    return $apiContact;
+  private function updateContact(ApiContact $apiContact) {
+    $apiContact->DataFields = $this->getContactDataFields()->toArray();
+    return $this->resources->UpdateContact($apiContact);
   }
 
   /**
    * Gets the data fields for contacts.
    *
    * @return \DotMailer\Api\DataTypes\ApiDataFieldList
-   *   A list of dotmailer data fields.
+   *   A list of dotMailer data fields.
    */
-  public function getContactFields() {
+  public function getDotmailerContactFields() {
     return $this->resources->GetDataFields();
   }
 
   /**
-   * Creates a dotmailer contact if it does not exist.
+   * Creates a dotMailer contact if it does not exist.
    *
    * If it does exist then get the current contact.
    *
@@ -345,9 +356,9 @@ class DotmailerApiUser extends ConfigEntityBase implements DotmailerApiUserInter
    *   A valid email type.
    *
    * @return \DotMailer\Api\DataTypes\ApiContact
-   *   A dotmailer contact.
+   *   A dotMailer contact.
    */
-  public function createContact(EmailAddress $email, OptInType $optInType, $emailType = 'Html') {
+  private function createContact(EmailAddress $email, OptInType $optInType, $emailType = 'Html') {
     $apiContact = $this->doesEmailExistWithContact($email);
     if ($apiContact === FALSE) {
       $apiContact = new ApiContact();
@@ -361,7 +372,7 @@ class DotmailerApiUser extends ConfigEntityBase implements DotmailerApiUserInter
     }
 
     if ($apiContact instanceof ApiContact && $this->contactNeedsUpdated($apiContact) == TRUE) {
-      $this->updateContact($apiContact);
+      $apiContact = $this->updateContact($apiContact);
     }
 
     return $apiContact;
@@ -376,8 +387,45 @@ class DotmailerApiUser extends ConfigEntityBase implements DotmailerApiUserInter
    * @return bool
    *   TRUE if so FALSE otherwise.
    */
-  public function contactNeedsUpdated(ApiContact $apiContact) {
-    return FALSE;
+  private function contactNeedsUpdated(ApiContact $apiContact) {
+    $update = FALSE;
+
+    $dotMailerContactFields = $apiContact->dataFields;
+
+    while ($dotMailerContactFields->valid()) {
+
+      $dotMailerContactField = $dotMailerContactFields->current()->toArray();
+
+      $val = $this->getContactDataFieldByKey($dotMailerContactField['key']);
+
+      if (isset($dotMailerContactField['value'][0]) && $val != $dotMailerContactField['value'][0]) {
+        $update = TRUE;
+        break;
+      }
+
+      $dotMailerContactFields->next();
+    }
+
+    return $update;
+  }
+
+  /**
+   * Get corresponding drupal entity field value from dotMailer ApiContact key.
+   *
+   * @param string $keyName
+   *   The key name to find.
+   *
+   * @return string|null
+   *   The value being stored or NULL if nothing has been entered.
+   */
+  private function getContactDataFieldByKey($keyName) {
+    $entityContactDataFields = $this->getContactDataFields()->toArray();
+    foreach ($entityContactDataFields as $entityContactDataField) {
+      if ($entityContactDataField['key'] == $keyName) {
+        return $entityContactDataField['value'];
+      }
+    }
+    return NULL;
   }
 
 }

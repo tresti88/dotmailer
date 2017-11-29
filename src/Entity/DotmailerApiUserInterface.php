@@ -2,8 +2,10 @@
 
 namespace Drupal\dotmailer\Entity;
 
+use DotMailer\Api\DataTypes\ApiContact;
 use Drupal\Core\Config\Entity\ConfigEntityInterface;
 use Drupal\dotmailer\ValueObject\ContactDataFieldArray;
+use Drupal\dotmailer\ValueObject\EmailAddress;
 
 /**
  * Provides an interface for defining Dotmailer api user entities.
@@ -75,11 +77,30 @@ interface DotmailerApiUserInterface extends ConfigEntityInterface {
   public function subscribeContact($addressBookId, $emailAddress, $optIn, $subscribed);
 
   /**
+   * Completely deletes a contact.
+   *
+   * @param \Drupal\dotmailer\ValueObject\EmailAddress $email
+   *   A valid email address object.
+   *
+   * @return bool
+   *   TRUE if we have delete a contact successfully, FALSE otherwise.
+   */
+  public function deleteContact(EmailAddress $email);
+
+  /**
    * Sets contact data fields.
    *
    * @param \Drupal\dotmailer\ValueObject\ContactDataFieldArray $contactDataFields
    *   The contact data fields as an array of type ContactDataFieldArray.
    */
   public function setContactDataFields(ContactDataFieldArray $contactDataFields);
+
+  /**
+   * Gets contact data fields.
+   *
+   * @return \Drupal\dotmailer\ValueObject\ContactDataFieldArray
+   *   The contact data fields as an array of type ContactDataFieldArray.
+   */
+  public function getContactDataFields();
 
 }
