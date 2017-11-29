@@ -1,0 +1,5 @@
+name: Dotmailer
+type: module
+description: Dotmailer integration
+core: 8.x
+package: Dotmailer

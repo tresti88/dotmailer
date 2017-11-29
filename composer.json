@@ -1,0 +1,16 @@
+{
+  "name": "drupal/dotmailer",
+  "type": "drupal-module",
+  "description": "Dotmailer integration",
+  "keywords": ["Drupal"],
+  "license": "GPL-2.0+",
+  "homepage": "https://www.drupal.org/project/dotmailer",
+  "minimum-stability": "dev",
+  "support": {
+    "issues": "https://www.drupal.org/project/issues/dotmailer",
+    "source": "http://cgit.drupalcode.org/dotmailer"
+  },
+  "require": {
+    "rossriley/dotmailer-api-v2-client": "^1.1"
+  }
+}

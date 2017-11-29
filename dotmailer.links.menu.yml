@@ -1,0 +1,7 @@
+# Dotmailer api user menu items definition
+entity.dotmailer_api_user.collection:
+  title: 'Dotmailer api user'
+  route_name: entity.dotmailer_api_user.collection
+  description: 'List Dotmailer api user (bundles)'
+  parent: system.admin_structure
+  weight: 99

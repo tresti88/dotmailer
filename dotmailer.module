@@ -1,0 +1,43 @@
+<?php
+
+/**
+ * @file
+ * Contains dotmailer.module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Form\FormStateInterface;
+
+/**
+ * Implements hook_help().
+ */
+function dotmailer_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the dotmailer module.
+    case 'help.page.dotmailer':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('Dotmailer integration') . '</p>';
+      return $output;
+
+    default:
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function dotmailer_form_field_storage_config_edit_form_alter(&$form, FormStateInterface &$form_state, $form_id) {
+  $storage = $form_state->getStorage();
+
+  /* @var $field_config \Drupal\field\Entity\FieldConfig */
+  $field_config = $storage['field_config'];
+
+  $field_type = $field_config->get('field_type');
+
+  if ($field_type == 'dotmailer_address_book_subscribe') {
+    // Hide the cardinality setting:
+    $form['cardinality_container']['cardinality_number']['#default_value'] = 1;
+    $form['cardinality_container']['#access'] = FALSE;
+  }
+}

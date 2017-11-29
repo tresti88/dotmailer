@@ -1,0 +1,5 @@
+entity.dotmailer_api_user.add_form:
+  route_name: entity.dotmailer_api_user.add_form
+  title: 'Add Dotmailer api user'
+  appears_on:
+    - entity.dotmailer_api_user.collection

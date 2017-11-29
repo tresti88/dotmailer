@@ -1,0 +1,4 @@
+services:
+  dotmailer.admin_form_elements:
+    class: 'Drupal\dotmailer\DotmailerAdminFormElementService'
+    arguments: ['@entity_type.manager']

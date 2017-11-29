@@ -1,0 +1,21 @@
+dotmailer.dotmailer_api_user.*:
+  type: config_entity
+  label: 'Dotmailer api user config'
+  mapping:
+    id:
+      type: string
+      label: 'ID'
+    label:
+      type: label
+      label: 'Label'
+    email:
+      type: string
+      label: 'Email'
+    password:
+      type: string
+      label: 'Password'
+    addressBooks:
+      type: array
+      label: 'Address books'
+    uuid:
+      type: string

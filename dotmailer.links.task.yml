@@ -1,0 +1,9 @@
+entity.dotmailer_api_user.addressbooks_form:
+  route_name: entity.dotmailer_api_user.addressbooks_form
+  base_route: entity.dotmailer_api_user.addressbooks_form
+  title: 'Dotmailer address books'
+entity.dotmailer_api_user.test_form:
+  route_name: entity.dotmailer_api_user.test_form
+  base_route: entity.dotmailer_api_user.addressbooks_form
+  title: 'Test Dotmailer user'
+  weight: -100
