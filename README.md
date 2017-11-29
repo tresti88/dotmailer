@@ -1,7 +1,7 @@
 Dotmailer
 =======
 
-Allows you to create dotmailer fields on entities.
+Allows you to create dotmailer fields on Drupal 8 entities.
 
 REQUIREMENTS
 -------------

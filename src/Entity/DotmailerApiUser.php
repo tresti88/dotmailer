@@ -190,13 +190,12 @@ class DotmailerApiUser extends ConfigEntityBase implements DotmailerApiUserInter
 
     $optInType = new OptInType($optInType);
 
-    $this->createContact($emailAddress, $optInType);
-
     if ($subscribed) {
+      $this->createContact($emailAddress, $optInType);
       $this->addUserToAddressBook($emailAddress, $addressBookId);
     }
 
-    if (empty($subscribed)) {
+    if (empty($subscribed) && $this->doesEmailExistWithContact($emailAddress) instanceof ApiContact) {
       $this->removeUserFromAddressBook($emailAddress, $addressBookId);
     }
 
