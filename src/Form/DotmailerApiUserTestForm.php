@@ -8,7 +8,6 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Messenger\Messenger;
 use Drupal\Core\Routing\CurrentRouteMatch;
-use Drupal\encrypt\EncryptionProfileManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\dotmailer\Entity\DotmailerApiUser;
 
@@ -41,6 +40,8 @@ class DotmailerApiUserTestForm extends FormBase {
    *   Entity type manager.
    * @param \Drupal\Core\Cache\CacheBackendInterface $cacheData
    *   Entity type manager.
+   * @param \Drupal\Core\Messenger\Messenger $messenger
+   *   The messenger service.
    */
   public function __construct(CurrentRouteMatch $current_route_match, EntityTypeManager $entityTypeManager, CacheBackendInterface $cacheData, Messenger $messenger) {
     $this->dotmailerApiUserMachineName = $current_route_match->getParameter('dotmailer_api_user');

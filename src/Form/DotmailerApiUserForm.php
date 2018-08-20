@@ -113,8 +113,9 @@ class DotmailerApiUserForm extends EntityForm {
    */
   public function save(array $form, FormStateInterface $form_state) {
     $encryptionProfile = $this->encryptionProfileManager->getEncryptionProfile($this->entity->getEncryptionProfileId());
-    $encryptedPassword = $this->encryptionService->encrypt($this->entity->getPassword(), $encryptionProfile);
+    $encryptedPassword = $this->encryptionService->encrypt($form_state->getValue('password'), $encryptionProfile);
     $this->entity->setPassword($encryptedPassword);
+
     $dotmailer_api_user = $this->entity;
     $status = $dotmailer_api_user->save();
 
