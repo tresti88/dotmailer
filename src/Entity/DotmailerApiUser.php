@@ -9,6 +9,7 @@ use DotMailer\Api\Container;
 use Drupal\dotmailer\ValueObject\ContactDataFieldArray;
 use Drupal\dotmailer\ValueObject\EmailAddress;
 use Drupal\dotmailer\ValueObject\OptInType;
+use Drupal\encrypt\Entity\EncryptionProfile;
 
 /**
  * Defines the DotMailer api user entity.
@@ -61,6 +62,13 @@ class DotmailerApiUser extends ConfigEntityBase implements DotmailerApiUserInter
    * @var \DotMailer\Api\Resources\Resources
    */
   protected $resources;
+
+  /**
+   * The instance id of the encryption profile.
+   *
+   * @var string
+   */
+  protected $encryption_profile;
 
   /**
    * The DotMailer api user label.
@@ -122,7 +130,7 @@ class DotmailerApiUser extends ConfigEntityBase implements DotmailerApiUserInter
         $this->resources = Container::newResources($credentials);
       }
       catch (\Exception $exception) {
-        drupal_set_message(
+        \Drupal::messenger()->addError(
           $this->t('The following error has occurred: @message', [
             '@message' => $exception->getMessage(),
           ]),
@@ -141,6 +149,10 @@ class DotmailerApiUser extends ConfigEntityBase implements DotmailerApiUserInter
     return $this->resources;
   }
 
+  public function getEncryptionProfileId() {
+    return $this->encryption_profile;
+  }
+
   /**
    * {@inheritdoc}
    */
@@ -152,7 +164,15 @@ class DotmailerApiUser extends ConfigEntityBase implements DotmailerApiUserInter
    * {@inheritdoc}
    */
   public function getPassword() {
-    return $this->password;
+    $encryption_profile = EncryptionProfile::load($this->getEncryptionProfileId());
+    return \Drupal::service('encryption')->decrypt($this->password, $encryption_profile);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setPassword($password) {
+    $this->password = $password;
   }
 
   /**

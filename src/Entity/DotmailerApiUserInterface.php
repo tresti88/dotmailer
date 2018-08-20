@@ -29,6 +29,14 @@ interface DotmailerApiUserInterface extends ConfigEntityInterface {
   public function getEmail();
 
   /**
+   * Returns the instance id of the encryption profile.
+   *
+   * @return string
+   *   encryption profile.
+   */
+  public function getEncryptionProfileId();
+
+  /**
    * Returns the password of the api user.
    *
    * @return string

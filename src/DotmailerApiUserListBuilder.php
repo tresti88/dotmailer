@@ -13,7 +13,7 @@ class DotmailerApiUserListBuilder extends ConfigEntityListBuilder {
   /**
    * {@inheritdoc}
    */
-  public function buildHeader() : array {
+  public function buildHeader() {
     $header['label'] = $this->t('Dotmailer api user');
     $header['id'] = $this->t('Machine name');
     $header['email'] = $this->t('Email');

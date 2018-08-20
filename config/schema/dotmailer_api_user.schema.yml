@@ -5,6 +5,9 @@ dotmailer.dotmailer_api_user.*:
     id:
       type: string
       label: 'ID'
+    encryption_profile:
+      type: label
+      label: 'Encryption profile id'
     label:
       type: label
       label: 'Label'

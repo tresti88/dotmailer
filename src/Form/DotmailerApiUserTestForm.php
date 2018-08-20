@@ -6,7 +6,9 @@ use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Messenger\Messenger;
 use Drupal\Core\Routing\CurrentRouteMatch;
+use Drupal\encrypt\EncryptionProfileManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\dotmailer\Entity\DotmailerApiUser;
 
@@ -16,6 +18,8 @@ use Drupal\dotmailer\Entity\DotmailerApiUser;
 class DotmailerApiUserTestForm extends FormBase {
 
   protected $dotmailerApiUserMachineName;
+
+  protected $messenger;
 
   /**
    * The dotmailer api user entity.
@@ -38,11 +42,12 @@ class DotmailerApiUserTestForm extends FormBase {
    * @param \Drupal\Core\Cache\CacheBackendInterface $cacheData
    *   Entity type manager.
    */
-  public function __construct(CurrentRouteMatch $current_route_match, EntityTypeManager $entityTypeManager, CacheBackendInterface $cacheData) {
+  public function __construct(CurrentRouteMatch $current_route_match, EntityTypeManager $entityTypeManager, CacheBackendInterface $cacheData, Messenger $messenger) {
     $this->dotmailerApiUserMachineName = $current_route_match->getParameter('dotmailer_api_user');
     $this->entityTypeManager = $entityTypeManager;
     $this->cache = $cacheData;
     $this->apiUser = $this->entityTypeManager->getStorage('dotmailer_api_user')->load($this->dotmailerApiUserMachineName);
+    $this->messenger = $messenger;
   }
 
   /**
@@ -52,7 +57,10 @@ class DotmailerApiUserTestForm extends FormBase {
     return new static(
       $container->get('current_route_match'),
       $container->get('entity_type.manager'),
-      $container->get('cache.data')
+      $container->get('cache.data'),
+      $container->get('messenger'),
+      $container->get('encrypt.encryption_profile.manager'),
+      $container->get('encryption')
     );
   }
 
@@ -103,7 +111,7 @@ class DotmailerApiUserTestForm extends FormBase {
 
     if ($clearCache) {
       $this->cache->delete($cacheId);
-      drupal_set_message($this->t('Address book cache cleared for dotmailer user @user', [
+      $this->messenger->addStatus($this->t('Address book cache cleared for dotmailer user @user', [
         '@user' => $this->apiUser->getEmail(),
       ]));
     }
@@ -113,11 +121,11 @@ class DotmailerApiUserTestForm extends FormBase {
       try {
 
         $this->apiUser->getDotmailerResources()->GetAccountInfo();
-        drupal_set_message($this->t('Entity is connected to dotmailer'));
+        $this->messenger->addStatus($this->t('Entity is connected to dotmailer'));
       }
       catch (\Exception $exception) {
 
-        drupal_set_message(
+        $this->messenger->addError(
           $this->t('The following error has occurred: @message', [
             '@message' => $exception->getMessage(),
           ]),
