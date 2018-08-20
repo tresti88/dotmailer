@@ -12,12 +12,12 @@ REQUIREMENTS
 
 INSTALLATION
 -------------
-To use this module you have to download it using composer and then install it.
-**(this will not work as the project is not on drupal.org yet!)**
+To use this module you have to download it via a git clone.
+Will get the project on drupal.org soon.
+Please follow the [Managing dependencies for a custom project](https://www.drupal.org/docs/develop/using-composer/managing-dependencies-for-a-custom-project)
+on drupal.org to get the _dotmailer-api-v2-client_ installed into Drupal.
+You will then be able to install and use the module.
 
-   ```sh
-    composer require "drupal/dotmailer"
-   ```
 USAGE
 -------------
 
