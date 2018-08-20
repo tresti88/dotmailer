@@ -21,6 +21,9 @@ You will then be able to install and use the module.
 USAGE
 -------------
 
+* Follow the instructions from the [encrypt module](https://www.drupal.org/docs/8/modules/encrypt/general-drupal-8-encrypt-setup-and-recommendations)
+to install an **encryption** profile that protects your api passwords.
+
 * Add a dotmailer api user by visiting the following url
 admin/structure/dotmailer_api_user
 
